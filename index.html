@@ -22,20 +22,20 @@
 			<p>Search Parameters</p>
 		</div>
 		<div class="panel panel-body">
-			<form>
+			<form class="styledForm">
 				Search: 
-				<input id="search" type="text" class="form-control" placeholder="Search">
+				<input id="search" type="text" class="form-control styledForm" placeholder="Search">
 				Limit: 
-				<select id="limitNumber" class="form-control">
+				<select id="limitNumber" class="form-control styledForm">
 					<option value="val1">1</option>
 					<option value="val5">5</option>
 					<option value="val10">10</option>
 					<option value="val20">20</option>
 				</select>
-				Begin Date (Not Optional): (yearmmdd)
-				<input id="start" type="text" class="form-control">
-				End Date (Not Optional): (yearmmdd)
-				<input id="end" type="text" class="form-control">
+				Begin Date (Optional): (yearmmdd)
+				<input id="start" type="text" class="form-control styledForm">
+				End Date (Optional): (yearmmdd)
+				<input id="end" type="text" class="form-control styledForm">
 				<button id="submit" type="button" class="btn btn-default">Submit</button>
 				<button id="clear" type="button" class="btn btn-default">Clear Results</button>
 			</form>
@@ -47,45 +47,91 @@
 	</div>
 </div>
 
-<script type="text/javascript">
-	
+<style type="text/css">
 
+	#search-parameters {
+		padding: 15px;
+	}
+
+	#search, #end, #start, #limitNumber {
+		padding: 15px;
+		margin: 15px 0 15px 0;
+		line-height: 150%;
+	}
+
+</style>
+
+<script type="text/javascript">
 	
 	$("#submit").on("click", function() {
 	var url = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
-	url += '?' + $.param({
-  		'api-key': "703d1eb1f23d44738fd589f6fd7d2cbd",
-  		'q': $('#search').val(),
-  		'begin_date':  $('#start').val(),
-  		'end_date':  $('#end').val(),
-	});
-		$.ajax({
-	  		url: url,
-	  		method: 'GET',
-		}).done(function(result) {
-	  		
-	  		var articles = result.response.docs;
 
-	  		for (var i = 0; i < articles.length; i ++) {
-	  			var artTitle = articles[i].headline.main;
-	  			var date = articles[i].pub_date;
-	  			var snippet = articles[i].snippet;
+	if ($("#end").val() && !$("#begin_date").val()) {
+		url += '?' + $.param({
+	  		'api-key': "703d1eb1f23d44738fd589f6fd7d2cbd",
+	  		'q': $('#search').val(),
+	  		'end_date': $('#end').val(),
+		});
+	}
 
-	  			var artDiv = $("<div>");
-	  			$("<p>").text(artTitle).addClass("page-header").appendTo(artDiv);
-	  			$("<p>").text(date).appendTo(artDiv);
-	  			$("<p>").text(snippet).appendTo(artDiv);
+	else if (!$("#end").val() && $("#begin_date").val()) {
+		url += '?' + $.param({
+	  		'api-key': "703d1eb1f23d44738fd589f6fd7d2cbd",
+	  		'q': $('#search').val(),
+	  		'begin_date': $('#start').val(),
+		});
+	}
 
-	  			$("#resultsDiv").append(artDiv);
-	  			console.log(artTitle);
-	  			console.log(date);
-	  			console.log(snippet);
-	  		}
+	else if ($("#end").val() && $("#begin_date").val()) {
+		url += '?' + $.param({
+	  		'api-key': "703d1eb1f23d44738fd589f6fd7d2cbd",
+	  		'q': $('#search').val(),
+	  		'begin_date': $('#start').val(),
+	  		'end_date': $('#end').val(),
+		});
+	}
+
+	else if (!$("#end").val() && !$("#begin_date").val()) {
+		url += '?' + $.param({
+	  		'api-key': "703d1eb1f23d44738fd589f6fd7d2cbd",
+	  		'q': $('#search').val(),
+		});
+	}
+
+	$.ajax({
+  		url: url,
+  		method: 'GET',
+	}).done(function(result) {
+  		
+  		var articles = result.response.docs;
+
+  		for (var i = 0; i < articles.length; i ++) {
+  			var artTitle = articles[i].headline.main;
+  			var date = articles[i].pub_date;
+  			var snippet = articles[i].snippet;
+
+  			var artDiv = $("<div>");
+  			$("<p>").text(artTitle).addClass("page-header").appendTo(artDiv);
+  			$("<p>").text(date).appendTo(artDiv);
+  			$("<p>").text(snippet).appendTo(artDiv);
+
+  			$("#resultsDiv").append(artDiv);
+  			console.log(artTitle);
+  			console.log(date);
+  			console.log(snippet);
+  		}
 
 	  		console.log(result);
 		}).fail(function(err) {
 	  	throw err;
 		});
+	})
+
+	$("#clear").on("click", function() {
+		$("#resultsDiv").empty();
+		$("#end").empty();
+		$("#begin_date").empty();
+		$("#search").empty();
 	})
 
 
